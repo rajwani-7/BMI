@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Diet Plan - HealthCompanion{% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <h2>⚡ HEALTHCOMPANION</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-btn"><span>DASHBOARD</span></a>
+            <a href="{{ url_for('profile') }}" class="nav-btn"><span>PROFILE</span></a>
+            <a href="{{ url_for('diet') }}" class="nav-btn active"><span>DIET PLAN</span></a>
+            <a href="{{ url_for('analytics') }}" class="nav-btn"><span>ANALYTICS</span></a>
+            <a href="{{ url_for('notifications') }}" class="nav-btn"><span>ALERTS</span></a>
+            <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><span>LOGOUT</span></a>
+        </div>
+    </div>
+</div>
+
+<div class="container dashboard-container">
+    <div class="section-header">
+        <h2>NUTRITION PROTOCOL</h2>
+        <p>{{ diet.goal }} | {{ diet.activity }} Activity Level</p>
+    </div>
+
+    <div class="card" style="max-width: 900px; margin: 0 auto;">
+        <!-- Explanation -->
+        <div style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%); padding: 25px; border-radius: 12px; border-left: 4px solid var(--neon-cyan); margin-bottom: 30px;">
+            <h3 style="margin-bottom: 15px; color: var(--neon-cyan);">WHY THIS PLAN:</h3>
+            <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.reason }}</p>
+        </div>
+
+        <!-- Medical Warnings -->
+        {% if diet.warnings != 'No specific medical warnings.' %}
+        <div style="background: linear-gradient(135deg, rgba(255, 0, 85, 0.1) 0%, rgba(255, 106, 0, 0.1) 100%); padding: 25px; border-radius: 12px; border-left: 4px solid var(--neon-red); margin-bottom: 30px;">
+            <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.warnings }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Meal Plan -->
+        <div style="margin-bottom: 30px;">
+            <div style="margin-bottom: 25px; padding: 25px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border-left: 4px solid var(--neon-cyan);">
+                <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-size: 1.3rem; font-family: 'Orbitron', sans-serif;">🌅 BREAKFAST</h4>
+                <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.breakfast }}</p>
+            </div>
+
+            <div style="margin-bottom: 25px; padding: 25px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border-left: 4px solid var(--neon-green);">
+                <h4 style="color: var(--neon-green); margin-bottom: 15px; font-size: 1.3rem; font-family: 'Orbitron', sans-serif;">🥗 LUNCH</h4>
+                <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.lunch }}</p>
+            </div>
+
+            <div style="margin-bottom: 25px; padding: 25px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border-left: 4px solid var(--neon-yellow);">
+                <h4 style="color: var(--neon-yellow); margin-bottom: 15px; font-size: 1.3rem; font-family: 'Orbitron', sans-serif;">🥤 SNACKS</h4>
+                <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.snacks }}</p>
+            </div>
+
+            <div style="margin-bottom: 25px; padding: 25px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border-left: 4px solid var(--neon-magenta);">
+                <h4 style="color: var(--neon-magenta); margin-bottom: 15px; font-size: 1.3rem; font-family: 'Orbitron', sans-serif;">🍽️ DINNER</h4>
+                <p style="line-height: 1.8; color: var(--text-primary);">{{ diet.dinner }}</p>
+            </div>
+        </div>
+
+        <!-- Food Swaps -->
+        <div style="background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 153, 102, 0.1) 100%); padding: 25px; border-radius: 12px; border-left: 4px solid var(--neon-green);">
+            <h3 style="margin-bottom: 20px; color: var(--neon-green); font-family: 'Orbitron', sans-serif;">🔄 FOOD SWAPS</h3>
+            {% for swap in diet.swaps %}
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0, 240, 255, 0.2);">
+                <strong style="color: var(--neon-red);">{{ swap[0] }}</strong>
+                <span style="color: var(--text-muted);">→</span>
+                <em style="color: var(--neon-green);">{{ swap[1] }}</em>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 30px; width: 100%;">BACK TO DASHBOARD</a>
+    </div>
+</div>
+{% endblock %}

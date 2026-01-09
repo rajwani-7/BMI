@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - HealthCompanion{% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <h2>⚡ HEALTHCOMPANION</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-btn"><span>DASHBOARD</span></a>
+            <a href="{{ url_for('profile') }}" class="nav-btn"><span>PROFILE</span></a>
+            <a href="{{ url_for('diet') }}" class="nav-btn"><span>DIET PLAN</span></a>
+            <a href="{{ url_for('analytics') }}" class="nav-btn"><span>ANALYTICS</span></a>
+            <a href="{{ url_for('notifications') }}" class="nav-btn active"><span>ALERTS</span></a>
+            <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><span>LOGOUT</span></a>
+        </div>
+    </div>
+</div>
+
+<div class="container dashboard-container">
+    <div class="section-header">
+        <h2>ALERT SYSTEM</h2>
+        <p>Configure your meal reminders</p>
+    </div>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <form method="POST">
+            <div style="margin-bottom: 30px; padding: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid var(--border-color);">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" name="enabled" id="enableNotifications" 
+                           {% if settings.enabled %}checked{% endif %}
+                           style="width: 24px; height: 24px; margin-right: 15px; cursor: pointer; accent-color: var(--neon-cyan);">
+                    <span style="font-size: 1.2rem; font-weight: 600; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px;">
+                        ENABLE MEAL NOTIFICATIONS
+                    </span>
+                </label>
+            </div>
+
+            <div id="timeSettings" style="{% if not settings.enabled %}display: none;{% endif %}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="breakfast_time">🌅 BREAKFAST TIME</label>
+                        <input type="time" id="breakfast_time" name="breakfast_time" value="{{ settings.breakfast_time }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="lunch_time">🥗 LUNCH TIME</label>
+                        <input type="time" id="lunch_time" name="lunch_time" value="{{ settings.lunch_time }}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="snack_time">🥤 SNACK TIME</label>
+                        <input type="time" id="snack_time" name="snack_time" value="{{ settings.snack_time }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="dinner_time">🍽️ DINNER TIME</label>
+                        <input type="time" id="dinner_time" name="dinner_time" value="{{ settings.dinner_time }}">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">SAVE SETTINGS</button>
+        </form>
+
+        <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%); border-radius: 12px; border-left: 4px solid var(--neon-cyan);">
+            <p style="color: var(--text-secondary); line-height: 1.8;">
+                <strong style="color: var(--neon-cyan);">Note:</strong> Notifications require browser permission. 
+                You'll be prompted to allow notifications when you enable this feature.
+            </p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 30px; width: 100%;">BACK TO DASHBOARD</a>
+    </div>
+</div>
+
+<script>
+    const checkbox = document.getElementById('enableNotifications');
+    const timeSettings = document.getElementById('timeSettings');
+
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            timeSettings.style.display = 'block';
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        } else {
+            timeSettings.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

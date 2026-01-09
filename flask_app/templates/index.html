@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}HealthCompanion - Your Health & Fitness Partner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="landing-page">
+        <div class="landing-content">
+            <div class="logo-gym">
+                <h1>🏥 HealthCompanion</h1>
+            </div>
+            <h2>Your Personal Health & Fitness Partner</h2>
+            <p>Track your health metrics, get personalized diet plans, and achieve your wellness goals with smart analytics and insights.</p>
+            
+            <div class="landing-features">
+                <div class="feature">
+                    <span class="icon">📊</span>
+                    <h3>BMI Analysis</h3>
+                    <p>Calculate and track your BMI with precision health recommendations</p>
+                </div>
+                <div class="feature">
+                    <span class="icon">🥗</span>
+                    <h3>Smart Nutrition</h3>
+                    <p>Get personalized meal plans tailored to your health goals</p>
+                </div>
+                <div class="feature">
+                    <span class="icon">📈</span>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your health journey with detailed analytics</p>
+                </div>
+                <div class="feature">
+                    <span class="icon">🔔</span>
+                    <h3>Smart Reminders</h3>
+                    <p>Stay on track with automated meal and health notifications</p>
+                </div>
+            </div>
+
+            <div class="landing-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Sign In</a>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">Get Started</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HealthCompanion{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-page">
+        <div class="auth-card">
+            <h1>WELCOME BACK</h1>
+            <p>Access your elite fitness dashboard</p>
+
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="email">EMAIL ADDRESS</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">PASSWORD</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">LOGIN</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ url_for('register') }}">REGISTER HERE</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

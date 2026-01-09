@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - HealthCompanion{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <h2>⚡ HEALTHCOMPANION</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-btn"><span>DASHBOARD</span></a>
+            <a href="{{ url_for('profile') }}" class="nav-btn"><span>PROFILE</span></a>
+            <a href="{{ url_for('diet') }}" class="nav-btn"><span>DIET PLAN</span></a>
+            <a href="{{ url_for('analytics') }}" class="nav-btn active"><span>ANALYTICS</span></a>
+            <a href="{{ url_for('notifications') }}" class="nav-btn"><span>ALERTS</span></a>
+            <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><span>LOGOUT</span></a>
+        </div>
+    </div>
+</div>
+
+<div class="container dashboard-container">
+    <div class="section-header">
+        <h2>PERFORMANCE ANALYTICS</h2>
+        <p>Track your progress over the last 30 days</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; margin-bottom: 40px;">
+        <!-- BMI Chart -->
+        <div class="card" style="height: 450px;">
+            <h3>BMI PROGRESS</h3>
+            <canvas id="bmiChart"></canvas>
+        </div>
+
+        <!-- Health Score Chart -->
+        <div class="card" style="height: 450px;">
+            <h3>HEALTH SCORE PROGRESS</h3>
+            <canvas id="healthScoreChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Weekly Summary -->
+    <div class="card" style="max-width: 900px; margin: 0 auto;">
+        <h3>WEEKLY SUMMARY</h3>
+        {% if summary %}
+        <div style="margin-top: 25px;">
+            {% if summary.bmi_change is defined %}
+            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="color: var(--text-secondary); font-weight: 600;">BMI Change:</span>
+                <span style="color: {% if summary.bmi_change > 0 %}var(--neon-red){% elif summary.bmi_change < 0 %}var(--neon-green){% else %}var(--neon-cyan){% endif %}; font-weight: 700; font-size: 1.1rem;">
+                    {% if summary.bmi_change > 0 %}📈{% elif summary.bmi_change < 0 %}📉{% else %}➡️{% endif %} 
+                    {{ summary.bmi_change }} ({{ summary.bmi_end }} from {{ summary.bmi_start }})
+                </span>
+            </div>
+            {% endif %}
+
+            {% if summary.score_change is defined %}
+            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="color: var(--text-secondary); font-weight: 600;">Health Score Change:</span>
+                <span style="color: {% if summary.score_change > 0 %}var(--neon-green){% elif summary.score_change < 0 %}var(--neon-red){% else %}var(--neon-cyan){% endif %}; font-weight: 700; font-size: 1.1rem;">
+                    {% if summary.score_change > 0 %}📈{% elif summary.score_change < 0 %}📉{% else %}➡️{% endif %} 
+                    {{ summary.score_change }} points ({{ summary.score_end }} from {{ summary.score_start }})
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p style="text-align: center; margin-top: 30px; color: var(--text-secondary);">
+            No data available yet. Update your profile to track your progress.
+        </p>
+        {% endif %}
+
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 30px; width: 100%;">BACK TO DASHBOARD</a>
+    </div>
+</div>
+
+<script>
+    // BMI Chart
+    const bmiCtx = document.getElementById('bmiChart').getContext('2d');
+    const bmiData = {{ bmi_history | tojson }};
+    const bmiChart = new Chart(bmiCtx, {
+        type: 'line',
+        data: {
+            labels: bmiData.map(d => new Date(d.date).toLocaleDateString()),
+            datasets: [{
+                label: 'BMI',
+                data: bmiData.map(d => d.bmi),
+                borderColor: '#00f0ff',
+                backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#00f0ff',
+                pointBorderColor: '#00f0ff',
+                pointHoverRadius: 7,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff',
+                        font: { size: 14, family: 'Rajdhani' }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(0, 240, 255, 0.1)' }
+                },
+                x: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(0, 240, 255, 0.1)' }
+                }
+            }
+        }
+    });
+
+    // Health Score Chart
+    const scoreCtx = document.getElementById('healthScoreChart').getContext('2d');
+    const scoreData = {{ score_history | tojson }};
+    const scoreChart = new Chart(scoreCtx, {
+        type: 'line',
+        data: {
+            labels: scoreData.map(d => new Date(d.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Health Score',
+                data: scoreData.map(d => d.score),
+                borderColor: '#00ff88',
+                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#00ff88',
+                pointBorderColor: '#00ff88',
+                pointHoverRadius: 7,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff',
+                        font: { size: 14, family: 'Rajdhani' }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(0, 255, 136, 0.1)' }
+                },
+                x: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(0, 255, 136, 0.1)' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
