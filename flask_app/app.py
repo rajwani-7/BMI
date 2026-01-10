@@ -4,10 +4,27 @@ from functools import wraps
 import sqlite3
 from datetime import datetime, timedelta
 import json
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
-app.config['DATABASE'] = 'health_companion.db'
+
+# Set database path to work in both development and production
+if os.path.exists('health_companion.db'):
+    app.config['DATABASE'] = 'health_companion.db'
+else:
+    app.config['DATABASE'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'health_companion.db')
+
+# Error handler for 500 errors
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(f'Internal Server Error: {error}')
+    return render_template('index.html'), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f'Unhandled exception: {str(e)}')
+    return f"An error occurred: {str(e)}", 500
 
 # ===== DATABASE FUNCTIONS =====
 
@@ -408,7 +425,18 @@ def diet():
         flash('Please set up your health profile first', 'error')
         return redirect(url_for('profile'))
     
-    from diet_recommender import get_diet_plan
+    try:
+        from diet_recommender import get_diet_plan
+    except ImportError:
+        try:
+            from flask_app.diet_recommender import get_diet_plan
+        except ImportError:
+            # Fallback to relative import
+            import sys
+            import os
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from diet_recommender import get_diet_plan
+    
     diet_plan = get_diet_plan(dict(profile))
     
     return render_template('diet.html', diet=diet_plan, profile=dict(profile))
