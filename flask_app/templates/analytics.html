@@ -7,51 +7,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="navbar">
-    <div class="navbar-container">
-        <div class="navbar-brand">
-            <h2>⚡ HEALTHCOMPANION</h2>
-        </div>
-        <div class="navbar-menu">
-            <a href="{{ url_for('dashboard') }}" class="nav-btn"><span>DASHBOARD</span></a>
-            <a href="{{ url_for('profile') }}" class="nav-btn"><span>PROFILE</span></a>
-            <a href="{{ url_for('diet') }}" class="nav-btn"><span>DIET PLAN</span></a>
-            <a href="{{ url_for('analytics') }}" class="nav-btn active"><span>ANALYTICS</span></a>
-            <a href="{{ url_for('notifications') }}" class="nav-btn"><span>ALERTS</span></a>
-            <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><span>LOGOUT</span></a>
-        </div>
-    </div>
-</div>
-
-<div class="container dashboard-container">
+<div class="dashboard-section" style="padding-top: 2rem;">
     <div class="section-header">
-        <h2>PERFORMANCE ANALYTICS</h2>
-        <p>Track your progress over the last 30 days</p>
+        <h2 class="section-title">Performance Analytics 📊</h2>
+        <p class="section-subtitle">Track your progress over the last 30 days</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; margin-bottom: 40px;">
+    <div class="dashboard-grid" style="margin-bottom: 2rem;">
         <!-- BMI Chart -->
-        <div class="card" style="height: 450px;">
-            <h3>BMI PROGRESS</h3>
-            <canvas id="bmiChart"></canvas>
+        <div class="dash-card">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">BMI Progress</h3>
+            <canvas id="bmiChart" style="max-height: 300px;"></canvas>
         </div>
 
         <!-- Health Score Chart -->
-        <div class="card" style="height: 450px;">
-            <h3>HEALTH SCORE PROGRESS</h3>
-            <canvas id="healthScoreChart"></canvas>
+        <div class="dash-card">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">Health Score Progress</h3>
+            <canvas id="healthScoreChart" style="max-height: 300px;"></canvas>
         </div>
     </div>
 
     <!-- Weekly Summary -->
-    <div class="card" style="max-width: 900px; margin: 0 auto;">
-        <h3>WEEKLY SUMMARY</h3>
+    <div class="dash-card" style="max-width: 900px; margin: 0 auto;">
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-dark);">Weekly Summary</h3>
         {% if summary %}
-        <div style="margin-top: 25px;">
+        <div style="margin-top: 1.5rem;">
             {% if summary.bmi_change is defined %}
-            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-secondary); font-weight: 600;">BMI Change:</span>
-                <span style="color: {% if summary.bmi_change > 0 %}var(--neon-red){% elif summary.bmi_change < 0 %}var(--neon-green){% else %}var(--neon-cyan){% endif %}; font-weight: 700; font-size: 1.1rem;">
+            <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(226, 232, 240, 0.5);">
+                <span style="color: var(--text-light); font-weight: 600;">BMI Change:</span>
+                <span style="color: {% if summary.bmi_change > 0 %}var(--danger){% elif summary.bmi_change < 0 %}var(--accent){% else %}var(--primary){% endif %}; font-weight: 700; font-size: 1.1rem;">
                     {% if summary.bmi_change > 0 %}📈{% elif summary.bmi_change < 0 %}📉{% else %}➡️{% endif %} 
                     {{ summary.bmi_change }} ({{ summary.bmi_end }} from {{ summary.bmi_start }})
                 </span>
@@ -59,9 +43,9 @@
             {% endif %}
 
             {% if summary.score_change is defined %}
-            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-secondary); font-weight: 600;">Health Score Change:</span>
-                <span style="color: {% if summary.score_change > 0 %}var(--neon-green){% elif summary.score_change < 0 %}var(--neon-red){% else %}var(--neon-cyan){% endif %}; font-weight: 700; font-size: 1.1rem;">
+            <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(226, 232, 240, 0.5);">
+                <span style="color: var(--text-light); font-weight: 600;">Health Score Change:</span>
+                <span style="color: {% if summary.score_change > 0 %}var(--accent){% elif summary.score_change < 0 %}var(--danger){% else %}var(--primary){% endif %}; font-weight: 700; font-size: 1.1rem;">
                     {% if summary.score_change > 0 %}📈{% elif summary.score_change < 0 %}📉{% else %}➡️{% endif %} 
                     {{ summary.score_change }} points ({{ summary.score_end }} from {{ summary.score_start }})
                 </span>
@@ -69,17 +53,17 @@
             {% endif %}
         </div>
         {% else %}
-        <p style="text-align: center; margin-top: 30px; color: var(--text-secondary);">
+        <p style="text-align: center; margin-top: 2rem; color: var(--text-light);">
             No data available yet. Update your profile to track your progress.
         </p>
         {% endif %}
 
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 30px; width: 100%;">BACK TO DASHBOARD</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 2rem; width: 100%;">Back to Dashboard</a>
     </div>
 </div>
 
 <script>
-    // BMI Chart
+    // BMI Chart with modern blue theme
     const bmiCtx = document.getElementById('bmiChart').getContext('2d');
     const bmiData = {{ bmi_history | tojson }};
     const bmiChart = new Chart(bmiCtx, {
@@ -89,13 +73,13 @@
             datasets: [{
                 label: 'BMI',
                 data: bmiData.map(d => d.bmi),
-                borderColor: '#00f0ff',
-                backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                borderColor: 'rgb(37, 99, 235)',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
                 tension: 0.4,
                 fill: true,
                 pointRadius: 5,
-                pointBackgroundColor: '#00f0ff',
-                pointBorderColor: '#00f0ff',
+                pointBackgroundColor: 'rgb(37, 99, 235)',
+                pointBorderColor: '#fff',
                 pointHoverRadius: 7,
                 borderWidth: 3
             }]
@@ -106,26 +90,26 @@
             plugins: {
                 legend: {
                     labels: {
-                        color: '#ffffff',
-                        font: { size: 14, family: 'Rajdhani' }
+                        color: 'rgb(100, 116, 139)',
+                        font: { size: 14, family: 'Inter' }
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: false,
-                    ticks: { color: '#a0aec0' },
-                    grid: { color: 'rgba(0, 240, 255, 0.1)' }
+                    ticks: { color: 'rgb(100, 116, 139)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' }
                 },
                 x: {
-                    ticks: { color: '#a0aec0' },
-                    grid: { color: 'rgba(0, 240, 255, 0.1)' }
+                    ticks: { color: 'rgb(100, 116, 139)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
                 }
             }
         }
     });
 
-    // Health Score Chart
+    // Health Score Chart with modern green theme
     const scoreCtx = document.getElementById('healthScoreChart').getContext('2d');
     const scoreData = {{ score_history | tojson }};
     const scoreChart = new Chart(scoreCtx, {
@@ -135,13 +119,13 @@
             datasets: [{
                 label: 'Health Score',
                 data: scoreData.map(d => d.score),
-                borderColor: '#00ff88',
-                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 tension: 0.4,
                 fill: true,
                 pointRadius: 5,
-                pointBackgroundColor: '#00ff88',
-                pointBorderColor: '#00ff88',
+                pointBackgroundColor: 'rgb(16, 185, 129)',
+                pointBorderColor: '#fff',
                 pointHoverRadius: 7,
                 borderWidth: 3
             }]
@@ -152,8 +136,8 @@
             plugins: {
                 legend: {
                     labels: {
-                        color: '#ffffff',
-                        font: { size: 14, family: 'Rajdhani' }
+                        color: 'rgb(100, 116, 139)',
+                        font: { size: 14, family: 'Inter' }
                     }
                 }
             },
@@ -161,12 +145,12 @@
                 y: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: { color: '#a0aec0' },
-                    grid: { color: 'rgba(0, 255, 136, 0.1)' }
+                    ticks: { color: 'rgb(100, 116, 139)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' }
                 },
                 x: {
-                    ticks: { color: '#a0aec0' },
-                    grid: { color: 'rgba(0, 255, 136, 0.1)' }
+                    ticks: { color: 'rgb(100, 116, 139)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
                 }
             }
         }
