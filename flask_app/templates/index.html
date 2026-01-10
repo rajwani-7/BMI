@@ -1,45 +1,122 @@
 {% extends "base.html" %}
 
-{% block title %}HealthCompanion - Your Health & Fitness Partner{% endblock %}
+{% block title %}HealthCompanion - Your Smart Gym & Health Companion{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="landing-page">
-        <div class="landing-content">
-            <div class="logo-gym">
-                <h1>🏥 HealthCompanion</h1>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="hero-badge">🚀 Your Fitness Journey Starts Here</div>
+        
+        <h1 class="hero-headline">Your Smart Gym & Health Companion</h1>
+        
+        <p class="hero-subheadline">
+            Track your BMI, get personalized nutrition plans, monitor your progress,
+            and achieve your fitness goals with AI-powered insights.
+        </p>
+        
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started Free</a>
+            <a href="#features" class="btn btn-secondary">Learn More</a>
+        </div>
+        
+        <!-- Hero Stats -->
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-number counter" data-target="10000">0</div>
+                <div class="stat-label">Active Users</div>
             </div>
-            <h2>Your Personal Health & Fitness Partner</h2>
-            <p>Track your health metrics, get personalized diet plans, and achieve your wellness goals with smart analytics and insights.</p>
-            
-            <div class="landing-features">
-                <div class="feature">
-                    <span class="icon">📊</span>
-                    <h3>BMI Analysis</h3>
-                    <p>Calculate and track your BMI with precision health recommendations</p>
-                </div>
-                <div class="feature">
-                    <span class="icon">🥗</span>
-                    <h3>Smart Nutrition</h3>
-                    <p>Get personalized meal plans tailored to your health goals</p>
-                </div>
-                <div class="feature">
-                    <span class="icon">📈</span>
-                    <h3>Progress Tracking</h3>
-                    <p>Monitor your health journey with detailed analytics</p>
-                </div>
-                <div class="feature">
-                    <span class="icon">🔔</span>
-                    <h3>Smart Reminders</h3>
-                    <p>Stay on track with automated meal and health notifications</p>
-                </div>
+            <div class="stat-card">
+                <div class="stat-number counter" data-target="50000">0</div>
+                <div class="stat-label">Workouts Tracked</div>
             </div>
-
-            <div class="landing-buttons">
-                <a href="{{ url_for('login') }}" class="btn btn-primary">Sign In</a>
-                <a href="{{ url_for('register') }}" class="btn btn-secondary">Get Started</a>
+            <div class="stat-card">
+                <div class="stat-number counter" data-target="95">0</div>
+                <div class="stat-label">Success Rate %</div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <div class="section-header">
+        <h2 class="section-title">Everything You Need To Stay Healthy</h2>
+        <p class="section-subtitle">Powerful features to help you track, analyze, and improve your health and fitness journey.</p>
+    </div>
+    
+    <div class="features-grid">
+        <!-- BMI Analysis -->
+        <div class="feature-card">
+            <div class="feature-icon icon-measuring-tape">📏</div>
+            <h3>BMI Analysis</h3>
+            <p>
+                Calculate and track your Body Mass Index with precision. Get detailed insights
+                about your health status and personalized recommendations for improvement.
+            </p>
+        </div>
+        
+        <!-- Smart Nutrition -->
+        <div class="feature-card">
+            <div class="feature-icon icon-pulse">🥗</div>
+            <h3>Smart Nutrition Plans</h3>
+            <p>
+                Receive AI-powered diet recommendations tailored to your goals, preferences,
+                and dietary restrictions. Make healthy eating simple and sustainable.
+            </p>
+        </div>
+        
+        <!-- Progress Tracking -->
+        <div class="feature-card">
+            <div class="feature-icon icon-dumbbell">💪</div>
+            <h3>Progress Tracking</h3>
+            <p>
+                Monitor your fitness journey with interactive charts and detailed analytics.
+                Visualize your improvements and stay motivated with real-time progress updates.
+            </p>
+        </div>
+        
+        <!-- Body Measurements -->
+        <div class="feature-card">
+            <div class="feature-icon icon-measuring-tape">📐</div>
+            <h3>Body Measurement Insights</h3>
+            <p>
+                Track comprehensive body measurements including weight, body fat percentage,
+                muscle mass, and more. Understand your body composition like never before.
+            </p>
+        </div>
+        
+        <!-- Workout Analytics -->
+        <div class="feature-card">
+            <div class="feature-icon icon-heartbeat">❤️</div>
+            <h3>Health Score Analytics</h3>
+            <p>
+                Get a comprehensive health score based on multiple factors. Track your
+                overall wellness and receive actionable insights to improve your health.
+            </p>
+        </div>
+        
+        <!-- Notifications -->
+        <div class="feature-card">
+            <div class="feature-icon icon-pulse">🔔</div>
+            <h3>Smart Reminders</h3>
+            <p>
+                Never miss a workout or meal with intelligent notifications. Customize
+                your reminder schedule and stay consistent with your fitness routine.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="features-section" style="padding-top: 2rem;">
+    <div class="section-header">
+        <h2 class="section-title">Ready to Transform Your Health?</h2>
+        <p class="section-subtitle">Join thousands of users who are already achieving their fitness goals.</p>
+        <div class="hero-buttons" style="margin-top: 2rem;">
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Start Your Journey</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Sign In</a>
+        </div>
+    </div>
+</section>
 {% endblock %}

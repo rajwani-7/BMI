@@ -3,134 +3,146 @@
 {% block title %}Profile - HealthCompanion{% endblock %}
 
 {% block content %}
-<div class="navbar">
-    <div class="navbar-container">
-        <div class="navbar-brand">
-            <h2>⚡ HEALTHCOMPANION</h2>
+<div class="form-container" style="max-width: 700px; margin-top: 2rem;">
+    <h1 class="form-title">Health Profile</h1>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Update your biometric data and preferences</p>
+
+    <form method="POST">
+        <!-- Age Slider -->
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Age</span>
+                <span class="slider-value" id="age-value">{{ profile.age if profile else 25 }}</span>
+            </div>
+            <input type="range" id="age" name="age" min="10" max="100" value="{{ profile.age if profile else 25 }}" class="slider">
         </div>
-        <div class="navbar-menu">
-            <a href="{{ url_for('dashboard') }}" class="nav-btn"><span>DASHBOARD</span></a>
-            <a href="{{ url_for('profile') }}" class="nav-btn active"><span>PROFILE</span></a>
-            <a href="{{ url_for('diet') }}" class="nav-btn"><span>DIET PLAN</span></a>
-            <a href="{{ url_for('analytics') }}" class="nav-btn"><span>ANALYTICS</span></a>
-            <a href="{{ url_for('notifications') }}" class="nav-btn"><span>ALERTS</span></a>
-            <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><span>LOGOUT</span></a>
+
+        <!-- Gender -->
+        <div class="form-group">
+            <label for="gender" class="form-label">Gender</label>
+            <select id="gender" name="gender" class="form-select" required>
+                <option value="">Select Gender</option>
+                <option value="Male" {% if profile and profile.gender == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if profile and profile.gender == 'Female' %}selected{% endif %}>Female</option>
+                <option value="Other" {% if profile and profile.gender == 'Other' %}selected{% endif %}>Other</option>
+            </select>
         </div>
-    </div>
+
+        <!-- Height Slider -->
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Height (cm)</span>
+                <span class="slider-value" id="height-value">{{ profile.height if profile else 170 }}</span>
+            </div>
+            <input type="range" id="height" name="height" min="100" max="250" value="{{ profile.height if profile else 170 }}" class="slider">
+        </div>
+
+        <!-- Weight Slider -->
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Weight (kg)</span>
+                <span class="slider-value" id="weight-value">{{ profile.weight if profile else 70 }}</span>
+            </div>
+            <input type="range" id="weight" name="weight" min="30" max="200" value="{{ profile.weight if profile else 70 }}" class="slider">
+        </div>
+
+        <!-- Activity Level -->
+        <div class="form-group">
+            <label for="activity_level" class="form-label">Activity Level</label>
+            <select id="activity_level" name="activity_level" class="form-select" required>
+                <option value="">Select Activity Level</option>
+                <option value="Low" {% if profile and profile.activity_level == 'Low' %}selected{% endif %}>Low (Sedentary)</option>
+                <option value="Medium" {% if profile and profile.activity_level == 'Medium' %}selected{% endif %}>Medium (Moderate)</option>
+                <option value="High" {% if profile and profile.activity_level == 'High' %}selected{% endif %}>High (Very Active)</option>
+            </select>
+        </div>
+
+        <!-- Sleep Hours Slider -->
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Sleep Hours</span>
+                <span class="slider-value" id="sleep-value">{{ profile.sleep_hours if profile else 7 }}</span>
+            </div>
+            <input type="range" id="sleep_hours" name="sleep_hours" min="3" max="12" step="0.5" value="{{ profile.sleep_hours if profile else 7 }}" class="slider">
+        </div>
+
+        <!-- Water Intake Slider -->
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Water Intake (glasses/day)</span>
+                <span class="slider-value" id="water-value">{{ profile.water_intake if profile else 8 }}</span>
+            </div>
+            <input type="range" id="water_intake" name="water_intake" min="1" max="20" value="{{ profile.water_intake if profile else 8 }}" class="slider">
+        </div>
+
+        <!-- Diet Preference -->
+        <div class="form-group">
+            <label for="diet_preference" class="form-label">Diet Preference</label>
+            <select id="diet_preference" name="diet_preference" class="form-select" required>
+                <option value="">Select Preference</option>
+                <option value="Veg" {% if profile and profile.diet_preference == 'Veg' %}selected{% endif %}>Vegetarian</option>
+                <option value="Non-Veg" {% if profile and profile.diet_preference == 'Non-Veg' %}selected{% endif %}>Non-Vegetarian</option>
+                <option value="Vegan" {% if profile and profile.diet_preference == 'Vegan' %}selected{% endif %}>Vegan</option>
+            </select>
+        </div>
+
+        <!-- Medical Conditions -->
+        <div class="form-group">
+            <label class="form-label">Medical Conditions</label>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="conditions" value="Diabetes" {% if profile and profile.medical_conditions and 'Diabetes' in profile.medical_conditions %}checked{% endif %}>
+                    <span>Diabetes</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="conditions" value="BP" {% if profile and profile.medical_conditions and 'BP' in profile.medical_conditions %}checked{% endif %}>
+                    <span>High BP</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="conditions" value="Thyroid" {% if profile and profile.medical_conditions and 'Thyroid' in profile.medical_conditions %}checked{% endif %}>
+                    <span>Thyroid</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="conditions" value="Cholesterol" {% if profile and profile.medical_conditions and 'Cholesterol' in profile.medical_conditions %}checked{% endif %}>
+                    <span>Cholesterol</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Fitness Goal -->
+        <div class="form-group">
+            <label for="goal" class="form-label">Fitness Goal</label>
+            <select id="goal" name="goal" class="form-select" required>
+                <option value="">Select Goal</option>
+                <option value="Lose Weight" {% if profile and profile.goal == 'Lose Weight' %}selected{% endif %}>Lose Weight</option>
+                <option value="Gain Weight" {% if profile and profile.goal == 'Gain Weight' %}selected{% endif %}>Gain Weight</option>
+                <option value="Maintain Weight" {% if profile and profile.goal == 'Maintain Weight' %}selected{% endif %}>Maintain Weight</option>
+                <option value="Improve Fitness" {% if profile and profile.goal == 'Improve Fitness' %}selected{% endif %}>Improve Fitness</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Profile</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">Back to Dashboard</a>
+    </form>
 </div>
 
-<div class="container dashboard-container">
-    <div class="section-header">
-        <h2>HEALTH PROFILE</h2>
-        <p>Configure your biometric data</p>
-    </div>
+<script>
+    // Update slider values in real-time
+    const sliders = [
+        { id: 'age', valueId: 'age-value' },
+        { id: 'height', valueId: 'height-value' },
+        { id: 'weight', valueId: 'weight-value' },
+        { id: 'sleep_hours', valueId: 'sleep-value' },
+        { id: 'water_intake', valueId: 'water-value' }
+    ];
 
-    <div class="card" style="max-width: 800px; margin: 0 auto;">
-        <form method="POST">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="age">AGE</label>
-                    <input type="number" id="age" name="age" min="1" max="150" 
-                           value="{{ profile.age if profile else '' }}" required>
-                </div>
-                <div class="form-group">
-                    <label for="gender">GENDER</label>
-                    <select id="gender" name="gender" required>
-                        <option value="">Select Gender</option>
-                        <option value="Male" {% if profile and profile.gender == 'Male' %}selected{% endif %}>Male</option>
-                        <option value="Female" {% if profile and profile.gender == 'Female' %}selected{% endif %}>Female</option>
-                        <option value="Other" {% if profile and profile.gender == 'Other' %}selected{% endif %}>Other</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="height">HEIGHT (cm)</label>
-                    <input type="number" id="height" name="height" min="100" max="250" step="0.1" 
-                           value="{{ profile.height if profile else '' }}" required>
-                </div>
-                <div class="form-group">
-                    <label for="weight">WEIGHT (kg)</label>
-                    <input type="number" id="weight" name="weight" min="20" max="300" step="0.1" 
-                           value="{{ profile.weight if profile else '' }}" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="activity_level">ACTIVITY LEVEL</label>
-                    <select id="activity_level" name="activity_level" required>
-                        <option value="">Select Activity Level</option>
-                        <option value="Low" {% if profile and profile.activity_level == 'Low' %}selected{% endif %}>Low (Sedentary)</option>
-                        <option value="Medium" {% if profile and profile.activity_level == 'Medium' %}selected{% endif %}>Medium (Moderate)</option>
-                        <option value="High" {% if profile and profile.activity_level == 'High' %}selected{% endif %}>High (Very Active)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="sleep_hours">SLEEP HOURS</label>
-                    <input type="number" id="sleep_hours" name="sleep_hours" min="0" max="24" step="0.5" 
-                           value="{{ profile.sleep_hours if profile else '' }}" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="water_intake">WATER INTAKE (glasses/day)</label>
-                    <input type="number" id="water_intake" name="water_intake" min="0" max="20" 
-                           value="{{ profile.water_intake if profile else '' }}" required>
-                </div>
-                <div class="form-group">
-                    <label for="diet_preference">DIET PREFERENCE</label>
-                    <select id="diet_preference" name="diet_preference" required>
-                        <option value="">Select Preference</option>
-                        <option value="Veg" {% if profile and profile.diet_preference == 'Veg' %}selected{% endif %}>Vegetarian</option>
-                        <option value="Non-Veg" {% if profile and profile.diet_preference == 'Non-Veg' %}selected{% endif %}>Non-Vegetarian</option>
-                        <option value="Vegan" {% if profile and profile.diet_preference == 'Vegan' %}selected{% endif %}>Vegan</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>MEDICAL CONDITIONS</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="conditions" value="Diabetes"
-                               {% if profile and profile.medical_conditions and 'Diabetes' in profile.medical_conditions %}checked{% endif %}>
-                        <span>Diabetes</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="conditions" value="BP"
-                               {% if profile and profile.medical_conditions and 'BP' in profile.medical_conditions %}checked{% endif %}>
-                        <span>High Blood Pressure</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="conditions" value="Thyroid"
-                               {% if profile and profile.medical_conditions and 'Thyroid' in profile.medical_conditions %}checked{% endif %}>
-                        <span>Thyroid Disorder</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="conditions" value="Cholesterol"
-                               {% if profile and profile.medical_conditions and 'Cholesterol' in profile.medical_conditions %}checked{% endif %}>
-                        <span>High Cholesterol</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="goal">FITNESS GOAL</label>
-                <select id="goal" name="goal" required>
-                    <option value="">Select Goal</option>
-                    <option value="Lose Weight" {% if profile and profile.goal == 'Lose Weight' %}selected{% endif %}>Lose Weight</option>
-                    <option value="Gain Weight" {% if profile and profile.goal == 'Gain Weight' %}selected{% endif %}>Gain Weight</option>
-                    <option value="Maintain Weight" {% if profile and profile.goal == 'Maintain Weight' %}selected{% endif %}>Maintain Weight</option>
-                    <option value="Improve Fitness" {% if profile and profile.goal == 'Improve Fitness' %}selected{% endif %}>Improve Fitness</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block">SAVE PROFILE</button>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-block" style="margin-top: 15px;">BACK TO DASHBOARD</a>
-        </form>
-    </div>
-</div>
+    sliders.forEach(slider => {
+        const input = document.getElementById(slider.id);
+        const valueDisplay = document.getElementById(slider.valueId);
+        
+        input.addEventListener('input', function() {
+            valueDisplay.textContent = this.value;
+        });
+    });
+</script>
 {% endblock %}

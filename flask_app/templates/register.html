@@ -3,40 +3,36 @@
 {% block title %}Register - HealthCompanion{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="auth-page">
-        <div class="auth-card">
-            <h1>JOIN THE ELITE</h1>
-            <p>Create your HealthCompanion account</p>
+<div class="form-container">
+    <h1 class="form-title">Create Your Account</h1>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Join thousands of users achieving their fitness goals</p>
 
-            <form method="POST" class="auth-form">
-                <div class="form-group">
-                    <label for="fullname">FULL NAME</label>
-                    <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">EMAIL ADDRESS</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">PASSWORD</label>
-                    <input type="password" id="password" name="password" placeholder="Create a strong password" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirm_password">CONFIRM PASSWORD</label>
-                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">CREATE ACCOUNT</button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Already have an account? <a href="{{ url_for('login') }}">LOGIN HERE</a></p>
-            </div>
+    <form method="POST">
+        <div class="form-group">
+            <label for="fullname" class="form-label">Full Name</label>
+            <input type="text" id="fullname" name="fullname" class="form-input" placeholder="John Doe" required>
         </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Confirm your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 2rem; color: var(--text-light);">
+        <p>Already have an account? <a href="{{ url_for('login') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign In</a></p>
     </div>
 </div>
 {% endblock %}

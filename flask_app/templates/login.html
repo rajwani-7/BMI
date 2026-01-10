@@ -3,30 +3,26 @@
 {% block title %}Login - HealthCompanion{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="auth-page">
-        <div class="auth-card">
-            <h1>WELCOME BACK</h1>
-            <p>Access your elite fitness dashboard</p>
+<div class="form-container">
+    <h1 class="form-title">Welcome Back</h1>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Sign in to your account to continue</p>
 
-            <form method="POST" class="auth-form">
-                <div class="form-group">
-                    <label for="email">EMAIL ADDRESS</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">PASSWORD</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">LOGIN</button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="{{ url_for('register') }}">REGISTER HERE</a></p>
-            </div>
+    <form method="POST">
+        <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>
         </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 2rem; color: var(--text-light);">
+        <p>Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Create One</a></p>
     </div>
 </div>
 {% endblock %}
