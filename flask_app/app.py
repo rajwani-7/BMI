@@ -6,11 +6,20 @@ from datetime import datetime, timedelta
 import json
 import os
 import atexit
+import sys
+
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import service modules
-from analytics_service import AnalyticsService
-from notification_service import NotificationService
-from scheduler import ReminderScheduler
+try:
+    from analytics_service import AnalyticsService
+    from notification_service import NotificationService
+    from scheduler import ReminderScheduler
+except ImportError:
+    from flask_app.analytics_service import AnalyticsService
+    from flask_app.notification_service import NotificationService
+    from flask_app.scheduler import ReminderScheduler
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
