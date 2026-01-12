@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HealthCompanion{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/github-style.css') }}">
+    <style>
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5) !important;
+        }
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -20,8 +29,20 @@
                     <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
                     <a href="{{ url_for('diet') }}" class="nav-link">Diet</a>
                     <a href="{{ url_for('analytics') }}" class="nav-link">Analytics</a>
-                    <a href="{{ url_for('notifications') }}" class="nav-link">Notifications</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">Logout</a>
+                    <a href="{{ url_for('notifications') }}" class="nav-link" style="position: relative;">
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            🔔 Notifications
+                            <span id="unread-badge" class="notification-badge" style="display: none; position: absolute; top: -5px; right: -10px; background: var(--danger); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center;"></span>
+                        </span>
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="logout-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; font-size: 0.9rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="nav-link">Login</a>
                     <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">Get Started</a>
@@ -105,6 +126,30 @@
         if (statsSection) {
             observer.observe(statsSection);
         }
+
+        // Fetch and update unread notification count
+        {% if session.user_id %}
+        function updateNotificationBadge() {
+            fetch('{{ url_for("get_unread_count") }}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('unread-badge');
+                    if (badge && data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'flex';
+                    } else if (badge) {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching notification count:', error));
+        }
+
+        // Update notification badge on page load
+        updateNotificationBadge();
+
+        // Update every 30 seconds
+        setInterval(updateNotificationBadge, 30000);
+        {% endif %}
     </script>
 
     {% block extra_js %}{% endblock %}

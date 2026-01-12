@@ -9,151 +9,345 @@
 {% block content %}
 <div class="dashboard-section" style="padding-top: 2rem;">
     <div class="section-header">
-        <h2 class="section-title">Performance Analytics 📊</h2>
-        <p class="section-subtitle">Track your progress over the last 30 days</p>
+        <h2 class="section-title">Weekly Fitness Report 📊</h2>
+        <p class="section-subtitle">Your health insights and progress tracking</p>
     </div>
 
+    {% if report.has_data or report.water_data or report.stats %}
+    
+    <!-- Key Stats Summary -->
+    {% if report.stats %}
     <div class="dashboard-grid" style="margin-bottom: 2rem;">
-        <!-- BMI Chart -->
-        <div class="dash-card">
-            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">BMI Progress</h3>
-            <canvas id="bmiChart" style="max-height: 300px;"></canvas>
-        </div>
-
-        <!-- Health Score Chart -->
-        <div class="dash-card">
-            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">Health Score Progress</h3>
-            <canvas id="healthScoreChart" style="max-height: 300px;"></canvas>
-        </div>
-    </div>
-
-    <!-- Weekly Summary -->
-    <div class="dash-card" style="max-width: 900px; margin: 0 auto;">
-        <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-dark);">Weekly Summary</h3>
-        {% if summary %}
-        <div style="margin-top: 1.5rem;">
-            {% if summary.bmi_change is defined %}
-            <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(226, 232, 240, 0.5);">
-                <span style="color: var(--text-light); font-weight: 600;">BMI Change:</span>
-                <span style="color: {% if summary.bmi_change > 0 %}var(--danger){% elif summary.bmi_change < 0 %}var(--accent){% else %}var(--primary){% endif %}; font-weight: 700; font-size: 1.1rem;">
-                    {% if summary.bmi_change > 0 %}📈{% elif summary.bmi_change < 0 %}📉{% else %}➡️{% endif %} 
-                    {{ summary.bmi_change }} ({{ summary.bmi_end }} from {{ summary.bmi_start }})
-                </span>
+        {% if report.stats.weight_change is defined %}
+        <div class="dash-card" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">
+                {% if report.stats.weight_change < 0 %}📉{% elif report.stats.weight_change > 0 %}📈{% else %}➡️{% endif %}
             </div>
-            {% endif %}
-
-            {% if summary.score_change is defined %}
-            <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(226, 232, 240, 0.5);">
-                <span style="color: var(--text-light); font-weight: 600;">Health Score Change:</span>
-                <span style="color: {% if summary.score_change > 0 %}var(--accent){% elif summary.score_change < 0 %}var(--danger){% else %}var(--primary){% endif %}; font-weight: 700; font-size: 1.1rem;">
-                    {% if summary.score_change > 0 %}📈{% elif summary.score_change < 0 %}📉{% else %}➡️{% endif %} 
-                    {{ summary.score_change }} points ({{ summary.score_end }} from {{ summary.score_start }})
-                </span>
+            <div class="dash-card-value" style="color: {% if report.stats.weight_change < 0 %}var(--accent){% elif report.stats.weight_change > 0 %}var(--danger){% else %}var(--text-dark){% endif %};">
+                {{ report.stats.weight_change|abs }} kg
             </div>
-            {% endif %}
+            <p style="color: var(--text-light); font-weight: 600; margin-top: 0.5rem;">Weight Change (7d)</p>
         </div>
-        {% else %}
-        <p style="text-align: center; margin-top: 2rem; color: var(--text-light);">
-            No data available yet. Update your profile to track your progress.
-        </p>
         {% endif %}
 
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 2rem; width: 100%;">Back to Dashboard</a>
+        {% if report.stats.avg_water is defined %}
+        <div class="dash-card" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💧</div>
+            <div class="dash-card-value" style="color: var(--primary);">{{ report.stats.avg_water }}</div>
+            <p style="color: var(--text-light); font-weight: 600; margin-top: 0.5rem;">Avg Water Intake</p>
+        </div>
+        {% endif %}
+
+        {% if report.stats.workout_consistency is defined %}
+        <div class="dash-card" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💪</div>
+            <div class="dash-card-value" style="color: var(--secondary);">{{ report.stats.workout_consistency|int }}%</div>
+            <p style="color: var(--text-light); font-weight: 600; margin-top: 0.5rem;">Workout Consistency</p>
+        </div>
+        {% endif %}
+
+        {% if report.stats.bmi_trend is defined %}
+        <div class="dash-card" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚖️</div>
+            <div class="dash-card-value" style="color: var(--text-dark);">
+                {% if report.stats.bmi_trend > 0 %}+{% endif %}{{ report.stats.bmi_trend }}
+            </div>
+            <p style="color: var(--text-light); font-weight: 600; margin-top: 0.5rem;">BMI Change (30d)</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Insight Cards -->
+    {% if report.insights %}
+    <div class="dash-card" style="margin-bottom: 2rem;">
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+            💡 Your Health Insights
+        </h3>
+        <div style="display: grid; gap: 1rem;">
+            {% for insight in report.insights %}
+            <div style="padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid 
+                {% if insight.type == 'success' %}var(--accent)
+                {% elif insight.type == 'warning' %}#f59e0b
+                {% elif insight.type == 'danger' %}var(--danger)
+                {% else %}var(--primary){% endif %}; 
+                background: {% if insight.type == 'success' %}rgba(34, 197, 94, 0.05)
+                {% elif insight.type == 'warning' %}rgba(245, 158, 11, 0.05)
+                {% elif insight.type == 'danger' %}rgba(239, 68, 68, 0.05)
+                {% else %}rgba(37, 99, 235, 0.05){% endif %};">
+                <div style="display: flex; align-items: start; gap: 1rem;">
+                    <div style="font-size: 2rem;">{{ insight.icon }}</div>
+                    <div style="flex: 1;">
+                        <h4 style="font-weight: 700; color: var(--text-dark); margin-bottom: 0.5rem; font-size: 1.1rem;">
+                            {{ insight.title }}
+                        </h4>
+                        <p style="color: var(--text-light); line-height: 1.6; margin: 0;">
+                            {{ insight.message }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Grid -->
+    <div class="dashboard-grid" style="margin-bottom: 2rem;">
+        <!-- Weight Progress Chart -->
+        {% if report.weight_data %}
+        <div class="dash-card">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+                📊 Weight Progress (Last 30 Days)
+            </h3>
+            <canvas id="weightChart" style="max-height: 300px;"></canvas>
+        </div>
+        {% endif %}
+
+        <!-- BMI Trend Chart -->
+        {% if report.bmi_data %}
+        <div class="dash-card">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+                ⚖️ BMI Trend (Last 30 Days)
+            </h3>
+            <canvas id="bmiChart" style="max-height: 300px;"></canvas>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Water Intake Chart -->
+    {% if report.water_data %}
+    <div class="dash-card" style="max-width: 900px; margin: 0 auto 2rem;">
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+            💧 Water Intake (Last 7 Days)
+        </h3>
+        <canvas id="waterChart" style="max-height: 300px;"></canvas>
+    </div>
+    {% endif %}
+
+    {% else %}
+    
+    <!-- No Data State -->
+    <div class="dash-card" style="text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 5rem; margin-bottom: 1.5rem;">📊</div>
+        <h3 style="font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-dark);">No Analytics Data Yet</h3>
+        <p style="color: var(--text-light); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.7;">
+            Start tracking your daily activities to see your fitness progress. Update your profile and log your daily water intake and workouts.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('seed_sample_data') }}" class="btn btn-primary">🌱 Generate Sample Data</a>
+            <a href="{{ url_for('profile') }}" class="btn btn-secondary">Update Profile</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Go to Dashboard</a>
+        </div>
+    </div>
+    
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 </div>
 
+{% if report.has_data or report.water_data or report.bmi_data %}
 <script>
-    // BMI Chart with modern blue theme
-    const bmiCtx = document.getElementById('bmiChart').getContext('2d');
-    const bmiData = {{ bmi_history | tojson }};
-    const bmiChart = new Chart(bmiCtx, {
+    // Chart.js default configuration
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b';
+
+        // Weight Chart
+        {% if report.weight_data %}
+        const weightCtx = document.getElementById('weightChart').getContext('2d');
+    new Chart(weightCtx, {
         type: 'line',
         data: {
-            labels: bmiData.map(d => new Date(d.date).toLocaleDateString()),
+            labels: {{ (report.weight_data | map(attribute='date') | list) | tojson }},
             datasets: [{
-                label: 'BMI',
-                data: bmiData.map(d => d.bmi),
-                borderColor: 'rgb(37, 99, 235)',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                label: 'Weight (kg)',
+                data: {{ (report.weight_data | map(attribute='weight') | list) | tojson }},
+                borderColor: '#22c55e',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 5,
-                pointBackgroundColor: 'rgb(37, 99, 235)',
+                pointBackgroundColor: '#22c55e',
                 pointBorderColor: '#fff',
-                pointHoverRadius: 7,
-                borderWidth: 3
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    labels: {
-                        color: 'rgb(100, 116, 139)',
-                        font: { size: 14, family: 'Inter' }
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return 'Weight: ' + context.parsed.y + ' kg';
+                        }
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: false,
-                    ticks: { color: 'rgb(100, 116, 139)' },
-                    grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' kg';
+                        }
+                    }
                 },
                 x: {
-                    ticks: { color: 'rgb(100, 116, 139)' },
-                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
     });
+    {% endif %}
 
-    // Health Score Chart with modern green theme
-    const scoreCtx = document.getElementById('healthScoreChart').getContext('2d');
-    const scoreData = {{ score_history | tojson }};
-    const scoreChart = new Chart(scoreCtx, {
+    // BMI Chart
+    {% if report.bmi_data %}
+    const bmiCtx = document.getElementById('bmiChart').getContext('2d');
+    new Chart(bmiCtx, {
         type: 'line',
         data: {
-            labels: scoreData.map(d => new Date(d.date).toLocaleDateString()),
+            labels: {{ (report.bmi_data | map(attribute='date') | list) | tojson }},
             datasets: [{
-                label: 'Health Score',
-                data: scoreData.map(d => d.score),
-                borderColor: 'rgb(16, 185, 129)',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                label: 'BMI',
+                data: {{ (report.bmi_data | map(attribute='bmi') | list) | tojson }},
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 5,
-                pointBackgroundColor: 'rgb(16, 185, 129)',
+                pointBackgroundColor: '#3b82f6',
                 pointBorderColor: '#fff',
-                pointHoverRadius: 7,
-                borderWidth: 3
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    labels: {
-                        color: 'rgb(100, 116, 139)',
-                        font: { size: 14, family: 'Inter' }
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 15,
+                    max: 40,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Water Intake Chart
+    {% if report.water_data %}
+    const waterCtx = document.getElementById('waterChart').getContext('2d');
+    new Chart(waterCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ (report.water_data | map(attribute='date') | list) | tojson }},
+            datasets: [{
+                label: 'Water Intake (glasses)',
+                data: {{ (report.water_data | map(attribute='glasses') | list) | tojson }},
+                backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                borderColor: '#2563eb',
+                borderWidth: 2,
+                borderRadius: 8,
+                hoverBackgroundColor: 'rgba(37, 99, 235, 0.9)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return 'Water: ' + context.parsed.y + ' glasses';
+                        }
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
-                    ticks: { color: 'rgb(100, 116, 139)' },
-                    grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                    max: 12,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        stepSize: 2,
+                        callback: function(value) {
+                            return value + ' glasses';
+                        }
+                    }
                 },
                 x: {
-                    ticks: { color: 'rgb(100, 116, 139)' },
-                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
     });
+    {% endif %}
 </script>
+{% endif %}
+
 {% endblock %}

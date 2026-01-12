@@ -5,6 +5,12 @@ import sqlite3
 from datetime import datetime, timedelta
 import json
 import os
+import atexit
+
+# Import service modules
+from analytics_service import AnalyticsService
+from notification_service import NotificationService
+from scheduler import ReminderScheduler
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
@@ -14,6 +20,12 @@ if os.path.exists('health_companion.db'):
     app.config['DATABASE'] = 'health_companion.db'
 else:
     app.config['DATABASE'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'health_companion.db')
+
+# Initialize services
+analytics_service = AnalyticsService(app.config['DATABASE'])
+notification_service = NotificationService(app.config['DATABASE'])
+scheduler = ReminderScheduler(app.config['DATABASE'], app)
+scheduler.set_notification_service(notification_service)
 
 # Error handler for 500 errors
 @app.errorhandler(500)
@@ -104,6 +116,45 @@ def init_db():
             lunch_time TEXT,
             snack_time TEXT,
             dinner_time TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Daily logs table - for tracking water intake and workouts
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            water_intake INTEGER DEFAULT 0,
+            workout_done BOOLEAN DEFAULT 0,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Notifications table - stores in-app notifications
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            type TEXT DEFAULT 'info',
+            action_url TEXT,
+            is_read BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            read_at TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Reminder settings table - for water and workout reminders
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reminder_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE NOT NULL,
+            water_reminder BOOLEAN DEFAULT 1,
+            workout_reminder BOOLEAN DEFAULT 1,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
@@ -266,13 +317,18 @@ def login():
         user = cursor.fetchone()
         conn.close()
         
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['fullname'] = user['fullname']
-            session['email'] = user['email']
-            return redirect(url_for('dashboard'))
+        if user:
+            if check_password_hash(user['password'], password):
+                session['user_id'] = user['id']
+                session['fullname'] = user['fullname']
+                session['email'] = user['email']
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Invalid password. Please check your password and try again.', 'error')
+                return render_template('login.html')
         else:
-            flash('Invalid email or password', 'error')
+            flash('Email not found. Please check your email or sign up.', 'error')
             return render_template('login.html')
     
     return render_template('login.html')
@@ -418,7 +474,7 @@ def diet():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM health_profiles WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
-    profile = cursor.fetchone()
+    profile = cursor.fetchone() 
     conn.close()
     
     if not profile:
@@ -444,98 +500,44 @@ def diet():
 @app.route('/analytics')
 @login_required
 def analytics():
-    """Analytics and progress tracking"""
+    """
+    Analytics and progress tracking - Weekly Fitness Report
+    Shows real insights with charts and data-driven recommendations
+    """
     user_id = session['user_id']
     
-    conn = get_db()
-    cursor = conn.cursor()
+    # Get weekly fitness report from analytics service
+    report = analytics_service.get_weekly_report(user_id)
     
-    # Get BMI history (last 30 days)
-    cursor.execute('''
-        SELECT bmi, weight, date 
-        FROM bmi_history 
-        WHERE user_id = ? AND date >= datetime('now', '-30 days')
-        ORDER BY date ASC
-    ''', (user_id,))
-    bmi_history = [dict(row) for row in cursor.fetchall()]
-    
-    # Get health score history (last 30 days)
-    cursor.execute('''
-        SELECT score, date 
-        FROM health_score_history 
-        WHERE user_id = ? AND date >= datetime('now', '-30 days')
-        ORDER BY date ASC
-    ''', (user_id,))
-    score_history = [dict(row) for row in cursor.fetchall()]
-    
-    conn.close()
-    
-    # Calculate weekly summary
-    summary = {}
-    if len(bmi_history) >= 2:
-        bmi_change = bmi_history[-1]['bmi'] - bmi_history[0]['bmi']
-        summary['bmi_change'] = round(bmi_change, 2)
-        summary['bmi_start'] = round(bmi_history[0]['bmi'], 1)
-        summary['bmi_end'] = round(bmi_history[-1]['bmi'], 1)
-    
-    if len(score_history) >= 2:
-        score_change = score_history[-1]['score'] - score_history[0]['score']
-        summary['score_change'] = score_change
-        summary['score_start'] = score_history[0]['score']
-        summary['score_end'] = score_history[-1]['score']
-    
-    return render_template('analytics.html', 
-                         bmi_history=bmi_history, 
-                         score_history=score_history,
-                         summary=summary)
+    return render_template('analytics.html', report=report)
 
-@app.route('/notifications', methods=['GET', 'POST'])
+@app.route('/notifications', methods=['GET'])
 @login_required
 def notifications():
-    """Notification settings"""
+    """
+    Notification center - displays all notifications with mark as read functionality
+    """
     user_id = session['user_id']
     
-    if request.method == 'POST':
-        enabled = request.form.get('enabled') == 'on'
-        breakfast_time = request.form.get('breakfast_time', '07:00')
-        lunch_time = request.form.get('lunch_time', '13:00')
-        snack_time = request.form.get('snack_time', '16:00')
-        dinner_time = request.form.get('dinner_time', '19:00')
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        # Check if settings exist
-        cursor.execute('SELECT id FROM notification_settings WHERE user_id = ?', (user_id,))
-        existing = cursor.fetchone()
-        
-        if existing:
-            cursor.execute('''
-                UPDATE notification_settings 
-                SET enabled=?, breakfast_time=?, lunch_time=?, snack_time=?, dinner_time=?
-                WHERE user_id=?
-            ''', (enabled, breakfast_time, lunch_time, snack_time, dinner_time, user_id))
-        else:
-            cursor.execute('''
-                INSERT INTO notification_settings 
-                (user_id, enabled, breakfast_time, lunch_time, snack_time, dinner_time)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (user_id, enabled, breakfast_time, lunch_time, snack_time, dinner_time))
-        
-        conn.commit()
-        conn.close()
-        
-        flash('Notification settings saved!', 'success')
-        return redirect(url_for('notifications'))
+    # Get all notifications
+    all_notifications = notification_service.get_user_notifications(user_id, unread_only=False, limit=50)
+    unread_count = notification_service.get_unread_count(user_id)
     
-    # GET request
+    # Get reminder settings
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM notification_settings WHERE user_id = ?', (user_id,))
-    settings = cursor.fetchone()
-    conn.close()
     
-    settings_data = dict(settings) if settings else {
+    cursor.execute('SELECT * FROM reminder_settings WHERE user_id = ?', (user_id,))
+    reminder_row = cursor.fetchone()
+    reminder_settings = dict(reminder_row) if reminder_row else {
+        'water_reminder': False,
+        'workout_reminder': False
+    }
+    
+    # Get meal notification settings
+    cursor.execute('SELECT * FROM notification_settings WHERE user_id = ?', (user_id,))
+    meal_row = cursor.fetchone()
+    meal_settings = dict(meal_row) if meal_row else {
         'enabled': False,
         'breakfast_time': '07:00',
         'lunch_time': '13:00',
@@ -543,10 +545,168 @@ def notifications():
         'dinner_time': '19:00'
     }
     
-    return render_template('notifications.html', settings=settings_data)
+    conn.close()
+    
+    return render_template('notifications.html', 
+                         notifications=all_notifications,
+                         unread_count=unread_count,
+                         reminder_settings=reminder_settings,
+                         meal_settings=meal_settings)
+
+@app.route('/notifications/mark-read/<int:notification_id>', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    """Mark a specific notification as read"""
+    user_id = session['user_id']
+    notification_service.mark_as_read(notification_id, user_id)
+    flash('Notification marked as read', 'success')
+    return redirect(url_for('notifications'))
+
+@app.route('/notifications/mark-all-read', methods=['POST'])
+@login_required
+def mark_all_notifications_read():
+    """Mark all notifications as read"""
+    user_id = session['user_id']
+    notification_service.mark_all_as_read(user_id)
+    flash('All notifications marked as read', 'success')
+    return redirect(url_for('notifications'))
+
+@app.route('/notifications/delete/<int:notification_id>', methods=['POST'])
+@login_required
+def delete_notification(notification_id):
+    """Delete a notification"""
+    user_id = session['user_id']
+    notification_service.delete_notification(notification_id, user_id)
+    flash('Notification deleted', 'success')
+    return redirect(url_for('notifications'))
+
+@app.route('/notifications/update-reminders', methods=['POST'])
+@login_required
+def update_reminder_settings():
+    """Update reminder settings (water and workout reminders)"""
+    user_id = session['user_id']
+    
+    water_reminder = request.form.get('water_reminder') == 'on'
+    workout_reminder = request.form.get('workout_reminder') == 'on'
+    
+    # Update reminder settings
+    scheduler.enable_user_reminders(user_id, water=water_reminder, workout=workout_reminder)
+    
+    # Update meal notification settings
+    meal_notifications = request.form.get('meal_notifications') == 'on'
+    breakfast_time = request.form.get('breakfast_time', '07:00')
+    lunch_time = request.form.get('lunch_time', '13:00')
+    snack_time = request.form.get('snack_time', '16:00')
+    dinner_time = request.form.get('dinner_time', '19:00')
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if settings exist
+    cursor.execute('SELECT id FROM notification_settings WHERE user_id = ?', (user_id,))
+    existing = cursor.fetchone()
+    
+    if existing:
+        cursor.execute('''
+            UPDATE notification_settings 
+            SET enabled=?, breakfast_time=?, lunch_time=?, snack_time=?, dinner_time=?
+            WHERE user_id=?
+        ''', (meal_notifications, breakfast_time, lunch_time, snack_time, dinner_time, user_id))
+    else:
+        cursor.execute('''
+            INSERT INTO notification_settings 
+            (user_id, enabled, breakfast_time, lunch_time, snack_time, dinner_time)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (user_id, meal_notifications, breakfast_time, lunch_time, snack_time, dinner_time))
+    
+    conn.commit()
+    conn.close()
+    
+    flash('Reminder settings updated successfully!', 'success')
+    return redirect(url_for('notifications'))
+
+@app.route('/api/log-activity', methods=['POST'])
+@login_required
+def log_activity():
+    """
+    API endpoint to log daily activity (water intake and workout)
+    Used by dashboard for quick logging
+    """
+    user_id = session['user_id']
+    data = request.get_json()
+    
+    water_intake = data.get('water_intake', 0)
+    workout_done = data.get('workout_done', False)
+    
+    success = analytics_service.log_daily_activity(user_id, water_intake, workout_done)
+    
+    if success:
+        # Check for achievements and send notifications
+        if water_intake >= 8:
+            notification_service.create_notification(
+                user_id,
+                'Hydration Goal!',
+                '💧 Great job! You drank 8+ glasses of water today!',
+                'success'
+            )
+        
+        if workout_done:
+            notification_service.create_notification(
+                user_id,
+                'Workout Complete!',
+                '💪 You completed your workout today. Keep it up!',
+                'success'
+            )
+        
+        return jsonify({'success': True, 'message': 'Activity logged successfully'})
+    else:
+        return jsonify({'success': False, 'message': 'Failed to log activity'}), 500
+
+@app.route('/api/notifications/unread-count', methods=['GET'])
+@login_required
+def get_unread_count():
+    """API endpoint to get unread notification count"""
+    user_id = session['user_id']
+    count = notification_service.get_unread_count(user_id)
+    return jsonify({'count': count})
+
+@app.route('/seed-data', methods=['GET', 'POST'])
+@login_required
+def seed_sample_data():
+    """
+    Seed sample fitness data for the current user
+    Creates 30 days of realistic data for testing
+    """
+    user_id = session['user_id']
+    
+    if request.method == 'POST':
+        from seed_data import seed_user_data
+        
+        try:
+            seed_user_data(app.config['DATABASE'], user_id)
+            flash('✅ Sample data created! Check your analytics now.', 'success')
+        except Exception as e:
+            flash(f'❌ Error seeding data: {str(e)}', 'error')
+        
+        return redirect(url_for('analytics'))
+    
+    # GET request - show confirmation page
+    return render_template('seed_data.html')
 
 # ===== MAIN =====
 
 if __name__ == '__main__':
     init_db()
+    
+    # Start the scheduler for reminders
+    scheduler.start()
+    
+    # Register cleanup on app shutdown
+    atexit.register(lambda: scheduler.shutdown())
+    
+    print("🚀 HealthCompanion is starting...")
+    print("📊 Analytics service initialized")
+    print("🔔 Notification service initialized")
+    print("⏰ Reminder scheduler started")
+    
     app.run(debug=True, port=5000)

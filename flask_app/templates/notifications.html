@@ -3,67 +3,193 @@
 {% block title %}Notifications - HealthCompanion{% endblock %}
 
 {% block content %}
-<div class="form-container" style="max-width: 700px; margin-top: 2rem;">
-    <h1 class="form-title">Notification Settings 🔔</h1>
-    <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Configure your meal reminders and alerts</p>
-    <form method="POST">
-        <div class="form-group" style="background: rgba(37, 99, 235, 0.05); padding: 1.5rem; border-radius: var(--radius-lg); border: 2px solid rgba(37, 99, 235, 0.2);">
-            <label style="display: flex; align-items: center; cursor: pointer;">
-                <input type="checkbox" name="enabled" id="enableNotifications" 
-                       {% if settings.enabled %}checked{% endif %}
-                       style="width: 20px; height: 20px; margin-right: 1rem; cursor: pointer; accent-color: var(--primary);">
-                <span style="font-size: 1.1rem; font-weight: 600; color: var(--primary);">
-                    Enable Meal Notifications
-                </span>
-            </label>
-        </div>
-
-        <div id="timeSettings" style="{% if not settings.enabled %}display: none;{% endif %}">
-            <div class="form-group">
-                <label for="breakfast_time" class="form-label">🌅 Breakfast Time</label>
-                <input type="time" id="breakfast_time" name="breakfast_time" value="{{ settings.breakfast_time }}" class="form-input">
-            </div>
-            <div class="form-group">
-                <label for="lunch_time" class="form-label">🥗 Lunch Time</label>
-                <input type="time" id="lunch_time" name="lunch_time" value="{{ settings.lunch_time }}" class="form-input">
-            </div>
-            <div class="form-group">
-                <label for="snack_time" class="form-label">🥤 Snack Time</label>
-                <input type="time" id="snack_time" name="snack_time" value="{{ settings.snack_time }}" class="form-input">
-            </div>
-            <div class="form-group">
-                <label for="dinner_time" class="form-label">🍽️ Dinner Time</label>
-                <input type="time" id="dinner_time" name="dinner_time" value="{{ settings.dinner_time }}" class="form-input">
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Settings</button>
-    </form>
-
-    <div style="margin-top: 2rem; padding: 1.25rem; background: rgba(37, 99, 235, 0.05); border-radius: var(--radius-lg); border-left: 4px solid var(--primary);">
-        <p style="color: var(--text-light); line-height: 1.7;">
-            <strong style="color: var(--primary);">Note:</strong> Notifications require browser permission. 
-            You'll be prompted to allow notifications when you enable this feature.
-        </p>
+<div class="dashboard-section" style="padding-top: 2rem; max-width: 1000px; margin: 0 auto;">
+    <div class="section-header" style="margin-bottom: 2rem;">
+        <h2 class="section-title">Notification Center 🔔</h2>
+        <p class="section-subtitle">Stay updated with your health reminders and alerts</p>
     </div>
 
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 2rem; width: 100%;">Back to Dashboard</a>
+    <!-- Reminder Settings Card -->
+    <div class="dash-card" style="margin-bottom: 2rem;">
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+            ⚙️ Reminder Settings
+        </h3>
+        <form method="POST" action="{{ url_for('update_reminder_settings') }}">
+            <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Water Reminder -->
+                <div style="padding: 1rem; border-radius: var(--radius-md); border: 2px solid rgba(37, 99, 235, 0.2); background: rgba(37, 99, 235, 0.05);">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="water_reminder" id="water_reminder" 
+                               {% if reminder_settings.water_reminder %}checked{% endif %}
+                               style="width: 20px; height: 20px; margin-right: 1rem; cursor: pointer; accent-color: var(--primary);">
+                        <div>
+                            <span style="font-size: 1.1rem; font-weight: 600; color: var(--primary);">💧 Water Reminders</span>
+                            <p style="margin: 0.25rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">
+                                Get reminded every 2 hours to stay hydrated
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Workout Reminder -->
+                <div style="padding: 1rem; border-radius: var(--radius-md); border: 2px solid rgba(34, 197, 94, 0.2); background: rgba(34, 197, 94, 0.05);">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="workout_reminder" id="workout_reminder" 
+                               {% if reminder_settings.workout_reminder %}checked{% endif %}
+                               style="width: 20px; height: 20px; margin-right: 1rem; cursor: pointer; accent-color: var(--accent);">
+                        <div>
+                            <span style="font-size: 1.1rem; font-weight: 600; color: var(--accent);">💪 Workout Reminders</span>
+                            <p style="margin: 0.25rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">
+                                Daily reminder at 6 PM to complete your workout
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Meal Notification Settings -->
+            <div style="border-top: 2px solid rgba(226, 232, 240, 0.5); padding-top: 1.5rem; margin-top: 1.5rem;">
+                <div style="background: rgba(245, 158, 11, 0.05); padding: 1.5rem; border-radius: var(--radius-lg); border: 2px solid rgba(245, 158, 11, 0.2); margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="meal_notifications" id="meal_notifications" 
+                               {% if meal_settings.enabled %}checked{% endif %}
+                               style="width: 20px; height: 20px; margin-right: 1rem; cursor: pointer; accent-color: #f59e0b;">
+                        <span style="font-size: 1.1rem; font-weight: 600; color: #f59e0b;">
+                            🍽️ Enable Meal Notifications
+                        </span>
+                    </label>
+                </div>
+
+                <div id="mealTimes" style="{% if not meal_settings.enabled %}display: none;{% endif %}">
+                    <div class="dashboard-grid" style="gap: 1rem;">
+                        <div class="form-group">
+                            <label for="breakfast_time" class="form-label">🌅 Breakfast Time</label>
+                            <input type="time" id="breakfast_time" name="breakfast_time" value="{{ meal_settings.breakfast_time }}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="lunch_time" class="form-label">🥗 Lunch Time</label>
+                            <input type="time" id="lunch_time" name="lunch_time" value="{{ meal_settings.lunch_time }}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="snack_time" class="form-label">🥤 Snack Time</label>
+                            <input type="time" id="snack_time" name="snack_time" value="{{ meal_settings.snack_time }}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="dinner_time" class="form-label">🍽️ Dinner Time</label>
+                            <input type="time" id="dinner_time" name="dinner_time" value="{{ meal_settings.dinner_time }}" class="form-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                💾 Save Reminder Settings
+            </button>
+        </form>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="dash-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; color: var(--text-dark); margin: 0;">
+                📬 Recent Notifications
+            </h3>
+            {% if unread_count > 0 %}
+            <form method="POST" action="{{ url_for('mark_all_notifications_read') }}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    Mark All as Read
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if notifications %}
+        <div style="display: grid; gap: 1rem;">
+            {% for notification in notifications %}
+            <div style="padding: 1.25rem; border-radius: var(--radius-md); border: 2px solid 
+                {% if notification.is_read %}rgba(226, 232, 240, 0.5){% else %}rgba(37, 99, 235, 0.3){% endif %}; 
+                background: {% if notification.is_read %}rgba(248, 250, 252, 0.5){% else %}rgba(37, 99, 235, 0.03){% endif %}; 
+                {% if not notification.is_read %}box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);{% endif %}
+                transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                            {% if not notification.is_read %}
+                            <span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; display: inline-block;"></span>
+                            {% endif %}
+                            <h4 style="font-weight: 700; color: var(--text-dark); margin: 0; font-size: 1.05rem;">
+                                {{ notification.title }}
+                            </h4>
+                        </div>
+                        <p style="color: var(--text-light); line-height: 1.6; margin: 0.5rem 0;">
+                            {{ notification.message }}
+                        </p>
+                        <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.75rem;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                                🕐 {{ notification.created_at[:16] }}
+                            </span>
+                            {% if notification.type %}
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
+                                background: {% if notification.type == 'success' %}rgba(34, 197, 94, 0.1)
+                                {% elif notification.type == 'warning' %}rgba(245, 158, 11, 0.1)
+                                {% elif notification.type == 'danger' %}rgba(239, 68, 68, 0.1)
+                                {% elif notification.type == 'reminder' %}rgba(139, 92, 246, 0.1)
+                                {% else %}rgba(37, 99, 235, 0.1){% endif %};
+                                color: {% if notification.type == 'success' %}#16a34a
+                                {% elif notification.type == 'warning' %}#d97706
+                                {% elif notification.type == 'danger' %}#dc2626
+                                {% elif notification.type == 'reminder' %}#7c3aed
+                                {% else %}#2563eb{% endif %};">
+                                {{ notification.type.upper() }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if not notification.is_read %}
+                        <form method="POST" action="{{ url_for('mark_notification_read', notification_id=notification.id) }}" style="display: inline;">
+                            <button type="submit" style="padding: 0.5rem; border: none; background: rgba(37, 99, 235, 0.1); color: var(--primary); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(37, 99, 235, 0.2)'" onmouseout="this.style.background='rgba(37, 99, 235, 0.1)'">
+                                ✓ Mark Read
+                            </button>
+                        </form>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('delete_notification', notification_id=notification.id) }}" style="display: inline;">
+                            <button type="submit" style="padding: 0.5rem; border: none; background: rgba(239, 68, 68, 0.1); color: var(--danger); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                                🗑️ Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔕</div>
+            <h4 style="font-size: 1.25rem; color: var(--text-dark); margin-bottom: 0.5rem;">No Notifications</h4>
+            <p style="color: var(--text-light);">You're all caught up! Check back later for updates.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
 </div>
 
 <script>
-    const checkbox = document.getElementById('enableNotifications');
-    const timeSettings = document.getElementById('timeSettings');
+    // Toggle meal notification times
+    const mealCheckbox = document.getElementById('meal_notifications');
+    const mealTimes = document.getElementById('mealTimes');
 
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            timeSettings.style.display = 'block';
-            // Request notification permission
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
+    if (mealCheckbox) {
+        mealCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                mealTimes.style.display = 'block';
+            } else {
+                mealTimes.style.display = 'none';
             }
-        } else {
-            timeSettings.style.display = 'none';
-        }
-    });
+        });
+    }
 </script>
 {% endblock %}

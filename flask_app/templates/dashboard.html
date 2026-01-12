@@ -67,6 +67,34 @@
             </div>
         </div>
 
+        <!-- Daily Activity Logger -->
+        <div class="dash-card" style="max-width: 600px; margin: 2rem auto;">
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--text-dark); text-align: center;">
+                📝 Log Today's Activity
+            </h3>
+            <form id="activityForm" style="display: grid; gap: 1.5rem;">
+                <div class="form-group">
+                    <label for="water_intake" class="form-label">💧 Water Intake (glasses)</label>
+                    <input type="number" id="water_intake" name="water_intake" min="0" max="20" value="0" 
+                           class="form-input" style="text-align: center; font-size: 1.1rem; font-weight: 600;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">Goal: 8 glasses/day</p>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 1.25rem; border-radius: var(--radius-md); border: 2px solid rgba(34, 197, 94, 0.2); background: rgba(34, 197, 94, 0.05); transition: all 0.3s;">
+                        <input type="checkbox" id="workout_done" name="workout_done" 
+                               style="width: 24px; height: 24px; margin-right: 1rem; cursor: pointer; accent-color: var(--accent);">
+                        <span style="font-size: 1.1rem; font-weight: 600; color: var(--accent);">
+                            💪 Completed Workout Today
+                        </span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">
+                    ✅ Save Activity
+                </button>
+            </form>
+            <div id="activityMessage" style="margin-top: 1rem; text-align: center; display: none;"></div>
+        </div>
+
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; justify-content: center;">
             <a href="{{ url_for('profile') }}" class="btn btn-primary">Update Profile</a>
             <a href="{{ url_for('diet') }}" class="btn btn-secondary">View Diet Plan</a>
@@ -81,4 +109,58 @@
         </div>
         {% endif %}
 </div>
+
+{% if data %}
+<script>
+    // Handle daily activity form submission
+    document.getElementById('activityForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const waterIntake = parseInt(document.getElementById('water_intake').value);
+        const workoutDone = document.getElementById('workout_done').checked;
+        const messageDiv = document.getElementById('activityMessage');
+        
+        fetch('{{ url_for("log_activity") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                water_intake: waterIntake,
+                workout_done: workoutDone
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageDiv.textContent = '✅ Activity logged successfully!';
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = 'var(--accent)';
+                messageDiv.style.padding = '1rem';
+                messageDiv.style.background = 'rgba(34, 197, 94, 0.1)';
+                messageDiv.style.borderRadius = 'var(--radius-md)';
+                messageDiv.style.fontWeight = '600';
+                
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                messageDiv.textContent = '❌ Failed to log activity. Please try again.';
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = 'var(--danger)';
+                messageDiv.style.padding = '1rem';
+                messageDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+                messageDiv.style.borderRadius = 'var(--radius-md)';
+                messageDiv.style.fontWeight = '600';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            messageDiv.textContent = '❌ An error occurred. Please try again.';
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = 'var(--danger)';
+        });
+    });
+</script>
+{% endif %}
 {% endblock %}
